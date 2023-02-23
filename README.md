@@ -2,7 +2,7 @@
 cd ./Task1 <br>
 npm ci - встановлюємо залежності <br>
 npm run dev - запуск серверу <br>
-Перевірити можна в Postman, в метод GET потрібно передати <br>
+Перевірити можна в Postman: методом GET, через body, потрібно передати <br>
 {<br>
 "walletAddress":"0xA145ac099E3d2e9781C9c848249E2e6b256b030D"<br>
 }
