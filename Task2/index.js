@@ -1,30 +1,32 @@
 const Web3 = require('web3');
-const request = require('request');
+const config = require("config")
+const fs = require('fs');
+
 const url = 'https://api.coingecko.com/api/v3/coins/list?include_platform=true';
+const walletAddress = config.get("address")
+const ethereum = "ethereum"
 let nameArray = []
 let addressArray = []
-const ethereum = "ethereum"
+const fetch = require( 'cross-fetch');
+let timerId = setTimeout(async function tick ()  {
+    try {
+        const date = new Date()
+        const now = date.toLocaleString()
+        const res = await fetch(url);
 
-request({
-    method: 'GET',
-    url: url
-}, function (error, response, body) {
-    let platformsss;
-    if (!error && response.statusCode == 200) {
-        // в циклі for, межу ітератора потрібно прописати в ручну тому, що для не всіх адресів,
-        // які ми дістаємо через coingecko API відпрацьовує web3.eth.Contract
-        for (let i = 0; i < JSON.parse(body).length; i++) {
-            platformsss = JSON.parse(body)[i].platforms
+        if (res.status >= 400) {
+            throw new Error("Bad response from server");
+        }
+
+        const user = await res.json();
+        let platformsss;
+        for (let i = 0; i < user.length; i++) {
+            platformsss = user[i].platforms
             if (Object.keys(platformsss).includes(ethereum)) {
-                nameArray.push(JSON.parse(body)[i].name)
+                nameArray.push(user[i].name)
                 addressArray.push(platformsss[ethereum])
             }
         }
-    }
-})
-
-class CreateInfoService {
-    async getTokenBalance(walletAddress) {
         const web3 = new Web3(new Web3.providers.HttpProvider('https://mainnet.infura.io/v3/8bf70f7acfd3417aa1f492bcc28d6bc4'));
 
         const balanceOfABI = [{"constant": true, "inputs": [{"name": "_owner", "type": "address"}], "name": "balanceOf", "outputs": [{"name": "balance", "type": "uint256"}], "payable": false, "stateMutability": "view", "type": "function"}, {"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}];
@@ -40,9 +42,12 @@ class CreateInfoService {
                 finalResult[`${nameArray[i]}`] = formattedResult
             }
         }
-        return {finalResult}
+        console.log(finalResult)
+        console.log(now)
+        fs.writeFileSync('data.json', JSON.stringify([finalResult, now]));
+
+        timerId = setTimeout(tick, 60000); // (*)
+    }catch (err) {
+        console.error(err);
     }
-
-}
-
-module.exports = new CreateInfoService()
+}, 0);
