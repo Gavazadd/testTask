@@ -3,8 +3,8 @@ const getInfoService = require('../services/getInfo')
 class AddressInfoController {
 
     async getInfo(req, res) {
-        const {walletaddress} = req.body
-        const result = await getInfoService.getTokenBalance(walletaddress)
+        const {walletAddress} = req.body
+        const result = await getInfoService.getTokenBalance(walletAddress)
         res.json(result)
     }
 }
